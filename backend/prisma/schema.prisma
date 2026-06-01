@@ -1,0 +1,270 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  CASHIER
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+enum OrderType {
+  IN_STORE
+  ONLINE_PICKUP
+}
+
+enum ActionType {
+  STOCK_IN
+  STOCK_OUT
+  ADJUSTMENT
+  IMPORT
+  SALE
+  RETURN
+}
+
+enum ReturnStatus {
+  PENDING
+  COMPLETED
+  REJECTED
+}
+
+enum ImportStatus {
+  DRAFT
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id            String     @id @default(uuid())
+  name          String
+  email         String     @unique
+  password      String
+  role          Role       @default(CASHIER)
+  profile_image String?
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @updatedAt
+  branch_id     String?
+  branch        Branch?    @relation(fields: [branch_id], references: [id])
+  audit_logs    AuditLog[]
+  tasks         Task[]
+  transfers     StockTransfer[]
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  products    Product[]
+}
+
+model Product {
+  id             String          @id @default(uuid())
+  category_id    String
+  category       Category        @relation(fields: [category_id], references: [id])
+  name           String
+  description    String?
+  sku            String          @unique
+  barcode        String?
+  purchase_price Float
+  selling_price  Float
+  stock          Int             @default(0)
+  min_stock      Int             @default(5)
+  image_url      String?
+  source_pdf     String?
+  status         String          @default("In Stock")
+  supplier_id    String?
+  supplier       Supplier?       @relation(fields: [supplier_id], references: [id])
+  created_at     DateTime        @default(now())
+  updated_at     DateTime        @updatedAt
+  invoice_items  InvoiceItem[]
+  inventory_logs InventoryLog[]
+  return_items   ReturnItem[]
+  branch_stocks  BranchStock[]
+  transfers      StockTransfer[]
+}
+
+model Supplier {
+  id         String   @id @default(uuid())
+  name       String
+  contact    String?
+  email      String?
+  phone      String?
+  address    String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  products   Product[]
+  imports    ImportRecord[]
+}
+
+model Customer {
+  id         String    @id @default(uuid())
+  name       String
+  phone      String
+  email      String?
+  address    String?
+  gst_number String?
+  notes      String?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  invoices   Invoice[]
+}
+
+model Invoice {
+  id              String        @id @default(uuid())
+  customer_id     String
+  customer        Customer      @relation(fields: [customer_id], references: [id])
+  invoice_number  String        @unique
+  subtotal        Float
+  tax_amount      Float
+  discount_amount Float         @default(0)
+  total_amount    Float
+  status          InvoiceStatus @default(PENDING)
+  order_type      OrderType     @default(IN_STORE)
+  branch_id       String?
+  branch          Branch?       @relation(fields: [branch_id], references: [id])
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @updatedAt
+  items           InvoiceItem[]
+  returns         Return[]
+}
+
+model InvoiceItem {
+  id         String  @id @default(uuid())
+  invoice_id String
+  invoice    Invoice @relation(fields: [invoice_id], references: [id])
+  product_id String
+  product    Product @relation(fields: [product_id], references: [id])
+  quantity   Int
+  unit_price Float
+  tax_amount Float
+  line_total Float
+}
+
+model InventoryLog {
+  id          String     @id @default(uuid())
+  product_id  String
+  product     Product    @relation(fields: [product_id], references: [id])
+  action_type ActionType
+  quantity    Int
+  notes       String?
+  created_at  DateTime   @default(now())
+}
+
+model ImportRecord {
+  id             String   @id @default(uuid())
+  file_name      String
+  file_path      String
+  total_products Int      @default(0)
+  imported_by    String?
+  supplier_id    String?
+  supplier       Supplier?       @relation(fields: [supplier_id], references: [id])
+  status         ImportStatus    @default(DRAFT)
+  draft_data     Json?
+  created_at     DateTime @default(now())
+}
+
+model Notification {
+  id         String   @id @default(uuid())
+  title      String
+  message    String
+  type       String
+  is_read    Boolean  @default(false)
+  created_at DateTime @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  user_id    String
+  user       User     @relation(fields: [user_id], references: [id])
+  action     String
+  entity     String
+  entity_id  String
+  created_at DateTime @default(now())
+}
+
+model Return {
+  id              String       @id @default(uuid())
+  invoice_id      String
+  invoice         Invoice      @relation(fields: [invoice_id], references: [id])
+  return_number   String       @unique
+  total_refunded  Float
+  reason          String?
+  status          ReturnStatus @default(COMPLETED)
+  created_at      DateTime     @default(now())
+  items           ReturnItem[]
+}
+
+model ReturnItem {
+  id             String  @id @default(uuid())
+  return_id      String
+  return         Return  @relation(fields: [return_id], references: [id])
+  product_id     String
+  product        Product @relation(fields: [product_id], references: [id])
+  quantity       Int
+  refund_amount  Float
+  restock        Boolean @default(true)
+}
+
+model Task {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  status      String   @default("TODO")
+  assigned_to String?
+  user        User?    @relation(fields: [assigned_to], references: [id])
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+}
+
+model Branch {
+  id         String   @id @default(uuid())
+  name       String
+  address    String?
+  phone      String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  
+  users            User[]
+  invoices         Invoice[]
+  stocks           BranchStock[]
+  transfers_out    StockTransfer[] @relation("SourceBranch")
+  transfers_in     StockTransfer[] @relation("TargetBranch")
+}
+
+model BranchStock {
+  id         String   @id @default(uuid())
+  branch_id  String
+  branch     Branch   @relation(fields: [branch_id], references: [id])
+  product_id String
+  product    Product  @relation(fields: [product_id], references: [id])
+  quantity   Int      @default(0)
+  updated_at DateTime @updatedAt
+
+  @@unique([branch_id, product_id])
+}
+
+model StockTransfer {
+  id               String   @id @default(uuid())
+  source_branch_id String
+  source_branch    Branch   @relation("SourceBranch", fields: [source_branch_id], references: [id])
+  target_branch_id String
+  target_branch    Branch   @relation("TargetBranch", fields: [target_branch_id], references: [id])
+  product_id       String
+  product          Product  @relation(fields: [product_id], references: [id])
+  quantity         Int
+  status           String   @default("PENDING")
+  created_by       String
+  user             User     @relation(fields: [created_by], references: [id])
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+}

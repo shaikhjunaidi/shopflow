@@ -234,10 +234,9 @@ export default function Storefront() {
               <div key={product.id} className="bg-white/5 backdrop-blur-xl rounded-[2rem] border border-white/10 overflow-hidden group hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] transition-all duration-500 flex flex-col relative">
                 {/* Glowing aura effect on hover */}
                 <div className="absolute inset-0 bg-gradient-to-b from-blue-500/0 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-                
                 <div className="aspect-[4/3] bg-black/40 p-8 flex items-center justify-center relative overflow-hidden">
                   {product.image_url ? (
-                    <img src={`${import.meta.env.VITE_API_URL || "http://localhost:5000"}${product.image_url}`} alt={product.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700 ease-out drop-shadow-2xl" />
+                    <img src={product.image_url} alt={product.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700 ease-out drop-shadow-2xl" />
                   ) : (
                     <ShoppingBag className="w-24 h-24 text-zinc-800 group-hover:scale-110 transition-transform duration-700 ease-out" />
                   )}
@@ -309,7 +308,7 @@ export default function Storefront() {
                     <div key={item.product_id} className="flex gap-5 bg-white/5 p-4 rounded-3xl border border-white/5 group hover:border-white/10 transition-colors">
                       <div className="w-24 h-24 bg-black/50 rounded-2xl flex items-center justify-center p-3 shrink-0 shadow-inner overflow-hidden">
                         {item.product.image_url ? (
-                          <img src={`${import.meta.env.VITE_API_URL || "http://localhost:5000"}${item.product.image_url}`} alt={item.product.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
+                          <img src={item.product.image_url} alt={item.product.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
                         ) : (
                           <ShoppingBag className="w-10 h-10 text-zinc-700" />
                         )}

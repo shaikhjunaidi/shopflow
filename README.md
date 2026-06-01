@@ -24,11 +24,6 @@ ShopFlow is an ultra-modern, fully responsive Point of Sale (POS) and inventory 
 
 **Frontend (Store & Dashboard):** [https://shopflow-frontend.onrender.com](https://shopflow-frontend.onrender.com)  
 **Backend API:** [https://shopflow-backend-j1mm.onrender.com](https://shopflow-backend-j1mm.onrender.com)  
-
-> **Default Admin Account:**
-> - Email: `junnuedits@gmail.com`
-> - Password: `junnubhai@07`
-
 ---
 
 ## 💎 Key Features

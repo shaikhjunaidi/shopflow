@@ -20,12 +20,6 @@ services:
     env: static
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: frontend/dist
-    envVars:
-      - key: VITE_API_HOST
-        fromService:
-          type: web
-          name: shopflow-backend
-          property: host
 
 databases:
   - name: shopflow-db

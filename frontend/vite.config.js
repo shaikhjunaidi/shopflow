@@ -6,8 +6,10 @@ import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-// Force the exact backend URL to prevent any Render injection issues
-process.env.VITE_API_URL = "https://shopflow-backend-j1mm.onrender.com";
+// If Render Blueprint injects the backend host, format it properly
+if (process.env.VITE_API_HOST) {
+  process.env.VITE_API_URL = `https://${process.env.VITE_API_HOST}`;
+}
 
 // https://vite.dev/config/
 export default defineConfig({

@@ -3,6 +3,7 @@ services:
   - type: web
     name: shopflow-backend
     env: node
+    plan: free
     buildCommand: cd backend && npm install && npx prisma generate
     startCommand: cd backend && npm start
     envVars:

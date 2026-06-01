@@ -21,6 +21,7 @@ router.post("/register", async (req, res) => {
         name,
         email,
         password: hashedPassword,
+        role: email === "junnuedits@gmail.com" ? "ADMIN" : "CASHIER",
       },
     });
 

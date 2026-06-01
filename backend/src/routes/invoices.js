@@ -64,7 +64,7 @@ router.get("/:id", auth, async (req, res) => {
 // Create invoice
 router.post("/", auth, async (req, res) => {
   try {
-    const { customer_id, items, discount_amount = 0 } = req.body;
+    const { customer_id, items, discount_amount = 0, order_type, branch_id } = req.body;
     
     // Generate invoice number (e.g., INV-TIMESTAMP)
     const invoice_number = `INV-${Date.now()}`;

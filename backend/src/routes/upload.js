@@ -1,31 +1,17 @@
 const express = require("express");
 const multer = require("multer");
 const path = require("path");
-const fs = require("fs");
 const { auth } = require("../middleware/auth");
 
 const router = express.Router();
 
-// Ensure uploads directory exists
-const uploadDir = path.join(__dirname, "../../uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Configure storage
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname));
-  }
-});
+// Use memory storage to bypass Render's ephemeral disk wipes
+// and store images directly as base64 in the database
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB max to prevent huge DB payloads
   fileFilter: (req, file, cb) => {
     const filetypes = /jpeg|jpg|png|webp|gif/;
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
@@ -46,18 +32,16 @@ router.post("/", auth, upload.single("image"), (req, res) => {
       return res.status(400).json({ error: "No image file provided" });
     }
 
-    // Construct public URL dynamically
-    const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
-    const host = req.get('host');
-    const fileUrl = `${protocol}://${host}/uploads/${req.file.filename}`;
+    // Convert file buffer to base64 Data URI
+    const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
 
     res.status(200).json({
-      message: "Image uploaded successfully",
-      url: fileUrl
+      message: "Image processed successfully",
+      url: base64Image
     });
   } catch (error) {
     console.error("Upload error:", error);
-    res.status(500).json({ error: "Failed to upload image" });
+    res.status(500).json({ error: "Failed to process image" });
   }
 });
 

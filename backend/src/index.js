@@ -63,8 +63,6 @@ app.use("/api/branches", branchRoutes);
 app.use("/api/transfers", transferRoutes);
 
 // Start server
-initializeDatabase().then(() => {
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-  });
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });

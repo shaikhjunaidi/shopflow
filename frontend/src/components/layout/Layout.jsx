@@ -27,7 +27,7 @@ import {
 export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [branches, setBranches] = useState([]);
@@ -138,8 +138,16 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen flex text-zinc-900 dark:text-zinc-100">
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden" 
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+      
       {/* Sidebar */}
-      <aside className={`glass-panel border-r transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-20'} flex flex-col z-50`}>
+      <aside className={`fixed md:relative inset-y-0 left-0 glass-panel border-r transition-all duration-300 ${isSidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full md:translate-x-0 md:w-20'} flex flex-col z-50 h-full`}>
         <div className="h-16 flex items-center justify-center border-b border-zinc-200 dark:border-zinc-800 shrink-0">
           <h1 className={`font-bold text-xl text-blue-600 dark:text-blue-500 ${!isSidebarOpen && 'hidden'}`}>ShopFlow</h1>
           {!isSidebarOpen && <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">S</div>}
